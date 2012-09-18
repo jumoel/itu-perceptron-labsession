@@ -164,6 +164,8 @@ public class NeuralNetwork {
 		int layers[] = { inputs[0].length, expectedOutputs[0].length };
 		NeuralNetwork neuralNet = new NeuralNetwork(layers);
 
+		boolean found_match = false;
+
 		//Train neural network and print out to screen as we go along
 		for(int i=0; i<1000; i++ ) {
 
@@ -199,19 +201,25 @@ public class NeuralNetwork {
 			System.out.println("EXPECTED OUTPUTS: " + ex);
 
 			if (out.equals(ex)) {
-				System.out.println("done!");
-
-				float[] ws = neuralNet.getWeights();
-				for (int w = 0; w < ws.length; w++) {
-					if (w > 0) {
-						System.out.print(", ");
-					}
-
-					System.out.print("w" + w + ": " + ws[w]);
-				}
-				System.out.println();
+				found_match = true;
 				break;
 			}
 		}
+
+		System.out.println("done!");
+
+		if (found_match) {
+			System.out.println("Found match!");
+		}
+
+		float[] ws = neuralNet.getWeights();
+		for (int w = 0; w < ws.length; w++) {
+			if (w > 0) {
+				System.out.print(", ");
+			}
+
+			System.out.print("w" + w + ": " + ws[w]);
+		}
+		System.out.println();
 	}
 };
