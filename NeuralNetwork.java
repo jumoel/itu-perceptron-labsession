@@ -122,6 +122,8 @@ public class NeuralNetwork {
 		this.learningRate = learningRate;
 	}
 
+	public float[] getWeights() { return weights; }
+
 	/** NeuralNetwork class testing method */
 	public static void main( String[] args) {
 		// A NOTE ON INPUT OUTPUT PAIRS
@@ -198,6 +200,16 @@ public class NeuralNetwork {
 
 			if (out.equals(ex)) {
 				System.out.println("done!");
+
+				float[] ws = neuralNet.getWeights();
+				for (int w = 0; w < ws.length; w++) {
+					if (w > 0) {
+						System.out.print(", ");
+					}
+
+					System.out.print("w" + w + ": " + ws[w]);
+				}
+				System.out.println();
 				break;
 			}
 		}
