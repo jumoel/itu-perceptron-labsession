@@ -15,14 +15,12 @@ public class NeuralNetwork {
 
 	// Put your data structures here
 	Random r = new Random();
-	float w0;
-	float w1;
+	float weights[];
 
 	float n = 0.1f;
 
 	float inputs[];
 	int outputs[];
-	int is[];
 
 	/** Allocate memory for the neural network and setup data structure
 	 * @param neuronsPerLayer an array containing the numbers of neurons
@@ -42,8 +40,11 @@ public class NeuralNetwork {
 			}
 		}
 
-		w0 = r.nextFloat();
-		w1 = r.nextFloat();
+
+		weights = new float[neuronsPerLayer[0] + 1];
+		for (int i = 0; i < weights.length; i++) {
+			weights[i] = r.nextFloat();
+		}
 
 		// Put initialization code here
 		// (a) initialize data structures as dictated by neuronsPerLayer array
@@ -54,10 +55,11 @@ public class NeuralNetwork {
 	 * @param inputs inputs values of the neural net
 	 */
 	public void setInput( int inputs[] ) {
-		this.inputs = new float[inputs.length];
+		this.inputs = new float[inputs.length + 1];
 
+		this.inputs[0] = 1.0f;
 		for (int i = 0; i < inputs.length; i++) {
-			this.inputs[i] = inputs[i] / 200.0f;
+			this.inputs[i + 1] = inputs[i] / 200.0f;
 		}
 	}
 
@@ -83,7 +85,10 @@ public class NeuralNetwork {
 	 */
 	public void activate() {		
 		// Put activation code here (computing output based on the network's inputs)
-		float S = w0 + this.inputs[0] * w1;
+		float S = 0.0f;
+		for (int i = 0; i < this.inputs.length; i++) {
+			S += this.weights[i] * this.inputs[i];
+		}
 
 		int a = step(S);
 
@@ -97,11 +102,10 @@ public class NeuralNetwork {
 
 		int error = d - a;
 
-		float dw0 = n * error;
-		float dw1 = n * inputs[0] * error;
-
-		w0 += dw0;
-		w1 += dw1;
+		for (int i = 0; i < inputs.length; i++) {
+			float dw = n * this.inputs[i] * error;
+			this.weights[i] += dw;
+		}
 	}
 
 	/** Learning rate getter
@@ -128,11 +132,11 @@ public class NeuralNetwork {
 		// CAUTION: using the data sets intended for Multilayer Networks with a single Perceptron will not converge!
 
 		// **** DATA SET 1: For use with a single Perceptron (single input: height)
-		int inputs[][] = { {170}, {190}, {165}, {180}, {210} };
-		int expectedOutputs[][] = { {0}, {1}, {0}, {0}, {1} }; 
+		//int inputs[][] = { {170}, {190}, {165}, {180}, {210} };
+		//int expectedOutputs[][] = { {0}, {1}, {0}, {0}, {1} }; 
 		// **** DATA SET 2: For use with a single Perceptron (two inputs: height/weight)
-		//		float inputs[][] = { {170,60}, {190,70}, {175,105}, {180,90}, {210,100} };
-		//		float expectedOutputs[][] = { {1}, {1}, {0}, {0}, {1} }; 
+				int inputs[][] = { {170,60}, {190,70}, {175,105}, {180,90}, {210,100} };
+				int expectedOutputs[][] = { {1}, {1}, {0}, {0}, {1} }; 
 		// **** DATA SET 3: For use with a Multilayer network (single input: height)
 		//		float inputs[][] = { {170}, {190}, {165}, {180}, {210} };
 		//		float expectedOutputs[][] = { {1}, {0}, {1}, {0}, {1} }; 
@@ -155,7 +159,7 @@ public class NeuralNetwork {
 		// Create neural network: CHANGE the network structure depending on the input/output and hidden layers
 		// Don't forget that the first integer in the layers array designates the number of inputs, 
 		// while the second and following integers designate the number of neurons in that layer (hidden or output layers).
-		int layers[]={1,1};
+		int layers[] = { inputs[0].length, expectedOutputs[0].length };
 		NeuralNetwork neuralNet = new NeuralNetwork(layers);
 
 		//Train neural network and print out to screen as we go along
