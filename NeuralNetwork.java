@@ -1,4 +1,5 @@
 import java.security.InvalidParameterException;
+import java.util.Random;
 
 /** Neural Network skeleton class<br/> 
  * compile using "javac NeuralNetwork.java"<br/>
@@ -13,6 +14,15 @@ public class NeuralNetwork {
 	protected float learningRate = 0.01f;
 
 	// Put your data structures here
+	Random r = new Random();
+	float w0;
+	float w1;
+
+	float n = 0.1f;
+
+	float inputs[];
+	int outputs[];
+	int is[];
 
 	/** Allocate memory for the neural network and setup data structure
 	 * @param neuronsPerLayer an array containing the numbers of neurons
@@ -21,15 +31,19 @@ public class NeuralNetwork {
 	 * are requested (input and output layers are mandatory) and if some
 	 * layers don't contain at least 1 neuron. 
 	 */
-	public NeuralNetwork( int neuronsPerLayer[] ) { if
-		(neuronsPerLayer.length < 2) throw new
-			InvalidParameterException("Invalid number of layers");
+	public NeuralNetwork( int neuronsPerLayer[] ) {
+		if (neuronsPerLayer.length < 2) {
+			throw new InvalidParameterException("Invalid number of layers");
+		}
 
 		for (int i=0;i<neuronsPerLayer.length;i++) {
 			if (neuronsPerLayer[i] < 1) {
 				throw new InvalidParameterException("Invalid number of neurons at layer "+i);
 			}
 		}
+
+		w0 = r.nextFloat();
+		w1 = r.nextFloat();
 
 		// Put initialization code here
 		// (a) initialize data structures as dictated by neuronsPerLayer array
@@ -39,16 +53,29 @@ public class NeuralNetwork {
 	/** Copy the inputs vector onto the inputs of the neural net 
 	 * @param inputs inputs values of the neural net
 	 */
-	public void setInput( float inputs[] ) {
-		// Put input assignment code here
+	public void setInput( int inputs[] ) {
+		this.inputs = new float[inputs.length];
+
+		for (int i = 0; i < inputs.length; i++) {
+			this.inputs[i] = inputs[i] / 200.0f;
+		}
 	}
 
 	/** Return a copy of the current output values 
 	 * @return a copy of the current output values
 	 */
-	public float[] getOutput() {
-		// Put output return code here (and remove "return null;")
-		return null;
+	public int[] getOutput() {
+		return this.outputs;
+	}
+
+	private int step(float S)
+	{
+		if (S <= 0) {
+			return 0;
+		}
+		else {
+			return 1;
+		}
 	}
 
 	/** Calculate the output of the neural network based on the input
@@ -56,12 +83,25 @@ public class NeuralNetwork {
 	 */
 	public void activate() {		
 		// Put activation code here (computing output based on the network's inputs)
+		float S = w0 + this.inputs[0] * w1;
+
+		int a = step(S);
+
+		this.outputs = new int[] { a };
 	}
 
 	/** update the weights of the network based on the different between the actual output and the expectedOutput */
-	public void applyBackpropagation( float expectedOutput[] ) {
-		// The code for updating weights goes here 
-		// NOTE: if using a single perceptron, this is not technically back-propagation, despite the function name 
+	public void applyBackpropagation( int expectedOutput[] ) {
+		int d = expectedOutput[0];
+		int a = this.outputs[0];
+
+		int error = d - a;
+
+		float dw0 = n * error;
+		float dw1 = n * inputs[0] * error;
+
+		w0 += dw0;
+		w1 += dw1;
 	}
 
 	/** Learning rate getter
@@ -88,8 +128,8 @@ public class NeuralNetwork {
 		// CAUTION: using the data sets intended for Multilayer Networks with a single Perceptron will not converge!
 
 		// **** DATA SET 1: For use with a single Perceptron (single input: height)
-		float inputs[][] = { {170}, {190}, {165}, {180}, {210} };
-		float expectedOutputs[][] = { {0}, {1}, {0}, {0}, {1} }; 
+		int inputs[][] = { {170}, {190}, {165}, {180}, {210} };
+		int expectedOutputs[][] = { {0}, {1}, {0}, {0}, {1} }; 
 		// **** DATA SET 2: For use with a single Perceptron (two inputs: height/weight)
 		//		float inputs[][] = { {170,60}, {190,70}, {175,105}, {180,90}, {210,100} };
 		//		float expectedOutputs[][] = { {1}, {1}, {0}, {0}, {1} }; 
@@ -110,7 +150,7 @@ public class NeuralNetwork {
 		//		float expectedOutputs[][] = { {0}, {1}, {1}, {0} }; 
 
 
-		float output[];
+		int output[];
 
 		// Create neural network: CHANGE the network structure depending on the input/output and hidden layers
 		// Don't forget that the first integer in the layers array designates the number of inputs, 
@@ -120,24 +160,41 @@ public class NeuralNetwork {
 
 		//Train neural network and print out to screen as we go along
 		for(int i=0; i<1000; i++ ) {
+
 			System.out.println("##### EPOCH " + Integer.toString( i ) );
-			for(int p=0; p<4; p++ ) {
-				System.out.print("INPUTS: " );
-				for( int x=0; x< layers[0]; x++ ) { System.out.print( Float.toString( inputs[p][x] ) + " " ); }
-				System.out.println("");
+
+			String in = "";
+			String out = "";
+			String ex = "";
+
+			for(int p=0; p<inputs.length; p++ ) {
+
 				neuralNet.setInput( inputs[p] );
-
 				neuralNet.activate();
-
 				output = neuralNet.getOutput();
-				System.out.print("OUTPUTS: " );
-				for( int x=0; x< layers[1]; x++ ) { System.out.print( Float.toString( output[x] ) + " " ); }
-				System.out.println("");
+
+				for( int x=0; x< layers[0]; x++ ) {
+					in += Integer.toString( inputs[p][x] ) + "\t";
+				}
+
+				for( int x=0; x< layers[layers.length - 1]; x++ ) {
+					ex += Integer.toString( expectedOutputs[p][x] ) + "\t";
+				}
+
+				for( int x=0; x< layers[layers.length - 1]; x++ ) {
+					out += Integer.toString( output[x] ) + "\t";
+				}
 
 				neuralNet.applyBackpropagation( expectedOutputs[p] );
-				System.out.print("EXPECTED OUTPUTS: " );
-				for( int x=0; x< layers[2]; x++ ) { System.out.print( Float.toString( expectedOutputs[p][x] ) + " " ); }
-				System.out.println("");
+			}
+
+			System.out.println("INPUTS:           " + in);
+			System.out.println("OUTPUTS:          " + out);
+			System.out.println("EXPECTED OUTPUTS: " + ex);
+
+			if (out.equals(ex)) {
+				System.out.println("done!");
+				break;
 			}
 		}
 	}
